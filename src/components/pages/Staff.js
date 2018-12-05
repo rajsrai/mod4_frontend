@@ -1,13 +1,43 @@
 import React, { Component } from 'react'
-import {Image, Video, Transformation, CloudinaryContext} from 'cloudinary-react';
+// import {Image, Video, Transformation, CloudinaryContext} from 'cloudinary-react';
 import Form from './Form'
+import VerticalTimeline from './VerticalTimeline'
 
 
 class Staff extends Component {
   state = {
     currentUserName: '',
-    currentUserEmail: ''
+    currentUserEmail: '',
+    momentArray: []
   }
+
+momentSubmit = (info) => {
+
+fetch('http://localhost:3001/moments', {
+  method: "POST",
+  headers: {
+    "content-type": "application/json"
+  },
+  body: JSON.stringify({
+    title: info.title,
+    description: info.description,
+    date: info.date,
+    location: info.location,
+    user_id: 1
+
+  })
+}).then(response => response.json())
+.then(data => {
+  this.setState({
+    momentArray: [...this.state.momentArray, data]
+  })
+})
+
+
+
+}
+
+
 
 
   componentDidMount() {
@@ -16,34 +46,33 @@ class Staff extends Component {
       currentUserEmail: idToken.idToken.claims.email,
       currentUserName: idToken.idToken.claims.name
     })
-    var myUploadWidget;
-     document.getElementById("upload_widget_opener").addEventListener("click", function() {
-    myUploadWidget = window.cloudinary.openUploadWidget({
-      cloudName: 'dhtrapttx', uploadPreset: 'ajr9rptq'}, (error, result) => {
-        console.log(result.info.secure_url)});
-    }, false);
 
-  }
+    fetch('http://localhost:3001/moments')
+    .then(response => response.json())
+    .then(data => {
+      this.setState({
+          momentArray: data
+      })
+    })
+
+}
+
+
+
 
   render() {
-    const { currentUserEmail, currentUserName } = this.state
+const { currentUserEmail, currentUserName } = this.state
 
 return (
     <div>
       <h1> Welcome { currentUserName } </h1>
-      <Form />
-      <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
-      <script>cloudinary.setCloudName(dhtrapttx);</script>
-      <a href="#" id="upload_widget_opener">Upload multiple images</a>
-      <p>Add to your timeline: </p>
-      <CloudinaryContext cloudName="dhtrapttx">
+      <Form moment={this.momentSubmit} />
       <div>
-      <Image publicId="klohucao7vrmsxq0f05d" width="500" />
+      <br></br>
       </div>
-      <Image publicId="tu14jajvzbnacpc0i89v" width="250" />
-      <Image publicId="be04f0i5zsxcudauijau" width="250" />
-      <Image publicId="o5cuohlxhmmm3l67kzhr" width="250" />
-      </CloudinaryContext>
+      <VerticalTimeline momentInfo={this.state.momentArray}/>
+
+
       </div>
 
     )
